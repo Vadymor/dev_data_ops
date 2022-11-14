@@ -1,0 +1,23 @@
+FROM python:3.10-alpine AS base
+
+ENV PYROOT /pyroot
+ENV PYTHONUSERBASE $PYROOT
+
+
+FROM base AS builder
+
+RUN pip install pipenv
+
+COPY Pipfile* ./
+
+RUN PIP_USER=1 PIP_IGNORE_INSTALLED=1 pipenv install --system --deploy --ignore-pipfile
+
+
+FROM base
+
+COPY --from=builder $PYROOT/lib/ $PYROOT/lib/
+COPY simple_api_1.py ./
+
+EXPOSE 8000
+
+CMD ["python","simple_api_1.py"]
